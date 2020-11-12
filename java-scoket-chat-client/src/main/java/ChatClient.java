@@ -14,6 +14,7 @@ public class ChatClient {
     private final int port = 6666;
     private boolean isRunning = true;
     private Scanner scanner;
+    private MessageSender messageSender;
 
     public static void main(String[] args) throws IOException{
         ChatClient chatClient = new ChatClient();
@@ -24,12 +25,18 @@ public class ChatClient {
         clientSocket = new Socket(serverIp, port);
         Scanner scan = new Scanner(System.in);
         out = new PrintWriter(clientSocket.getOutputStream(), true);
+        new MessageReceiver(this.clientSocket).start();
+        this.messageSender = new MessageSender(this.clientSocket);
 
         while(isRunning) {
-            in = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
-            System.out.println(in.readLine());
             String message = scan.nextLine();
-            out.println(message);
+
+            if(message.equalsIgnoreCase("exit chat")) {
+                this.isRunning = false;
+                stop();
+                break;
+            }
+            this.messageSender.sendMessage(message);
         }
     }
 
