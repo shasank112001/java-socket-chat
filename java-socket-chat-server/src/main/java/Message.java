@@ -11,7 +11,7 @@ public class Message {
     }
     public Message(String input)//Used to parse a single string into the fromClient, toClient and the message.
     {
-        String[] brokenMsg=input.split("|");
+        String[] brokenMsg=input.split("#");
         initMessage(Integer.parseInt(brokenMsg[0]),checkMsgToAll(brokenMsg[1]),brokenMsg[2]);
     }
     public int checkMsgToAll(String toClient)
