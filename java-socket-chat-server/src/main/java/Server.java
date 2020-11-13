@@ -7,20 +7,19 @@ public class Server {
     ServerSocket serverSocket;
     Stack<Message> msgBuffer;
     int clientCounter;
-    ArrayList<BufferedReader> readerArray;
     ArrayList<ClientHandler> clientList;
     MessageSender serverMsgSender;
     {
         clientCounter=0;
         clientList=new ArrayList<ClientHandler>();
-        readerArray=new ArrayList<BufferedReader>();
         msgBuffer=new Stack<>();
-        serverMsgSender=new MessageSender(this);
     }
     public Server(int port) throws IOException
     {
         this.serverSocket=new ServerSocket(port);
-        new MessageReceiver(this, this.readerArray).start();
+//        new MessageReceiver(this).start();
+        serverMsgSender=new MessageSender(this);
+        serverMsgSender.start();
     }
 
     class ClientHandler extends Thread
@@ -39,18 +38,18 @@ public class Server {
             this.out=new PrintWriter(clientSocket.getOutputStream(), true);
             this.in=new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             this.mainServer.clientList.add(this);
-            this.mainServer.addReader(this.in);
             this.mainServer.serverMsgSender.connectionEstablished(this.out);
         }
 
         public void run()
         {
-            while(true)
+            try {
+                while (true)
+                    new MessageReceiverClientBased(this, this.mainServer).startReceivingMessages();
+            }
+            catch(IOException ex)
             {
-                if(this.mainServer.msgBuffer.isEmpty())
-                    continue;
-                else
-                    out.println(msgBuffer.pop().toString());
+
             }
         }
         public void close()        {
@@ -64,8 +63,6 @@ public class Server {
         {
                 new ClientHandler(serverSocket.accept(), this).start();
                 System.out.println("clientCounter="+clientCounter+" threadCount="+clientList);
-                if(!msgBuffer.isEmpty())
-                    System.out.println("MessageBuffer="+msgBuffer.peek());
         }
     }
     public void stop() throws IOException
@@ -74,11 +71,8 @@ public class Server {
     }
     public void pushMessage(String msg)
     {
+        System.out.println(msg+"   - was pushed into the stack");
         this.msgBuffer.push(new Message(msg));
-    }
-    public void addReader(BufferedReader in)
-    {
-        readerArray.add(in);
     }
     public static void main(String[] args) throws IOException
     {

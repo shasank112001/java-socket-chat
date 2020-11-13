@@ -3,8 +3,8 @@ public class Message {
     private int fromClient;
     private int toClient;
     private String message;
-    private static final int msgToAll=-100;
-
+    public static final int msgToAll=-100;
+    public static final int msgToServer=-200;
     public Message()
     {
 
@@ -12,12 +12,15 @@ public class Message {
     public Message(String input)//Used to parse a single string into the fromClient, toClient and the message.
     {
         String[] brokenMsg=input.split("#");
-        initMessage(Integer.parseInt(brokenMsg[0]),checkMsgToAll(brokenMsg[1]),brokenMsg[2]);
+        System.out.println(brokenMsg[2]);
+        initMessage(Integer.parseInt(brokenMsg[0]),checkMsgToAllOrServer(brokenMsg[1]),brokenMsg[2]);
     }
-    public int checkMsgToAll(String toClient)
+    public int checkMsgToAllOrServer(String toClient)
     {
         if(toClient.equalsIgnoreCase("all"))
             return Message.msgToAll;
+        else if(toClient.equalsIgnoreCase("server"))
+            return Message.msgToServer;
         else
             return Integer.parseInt(toClient);
     }
@@ -29,10 +32,14 @@ public class Message {
     }
     public int getSender()
     {
-        return fromClient;
+        return this.fromClient;
     }
-    public int getReciever()
+    public int getReceiver()
     {
-        return toClient;
+        return this.toClient;
+    }
+    public String getMessage()
+    {
+        return this.message;
     }
 }

@@ -4,16 +4,14 @@ import java.nio.Buffer;
 import java.util.ArrayList;
 
 public class MessageReceiver extends Thread {
-    ArrayList<BufferedReader> readers;
     Server mainServer;
 
     public MessageReceiver()
     {
 
     }
-    public MessageReceiver(Server mainServer, ArrayList<BufferedReader> readers)
+    public MessageReceiver(Server mainServer)
     {
-        this.readers=readers;
         this.mainServer=mainServer;
     }
 
@@ -21,10 +19,14 @@ public class MessageReceiver extends Thread {
         String message;
         try {
             while(true) {
-                for(BufferedReader in : readers)
+                if(this.mainServer.clientList.isEmpty()) {
+                    System.out.println("The array is empty as of now");
+                    continue;
+                }
+                for(Server.ClientHandler client : this.mainServer.clientList)
                 {
-                    message=in.readLine();
-                    mainServer.pushMessage(message);
+                    message=client.in.readLine();
+                    mainServer.pushMessage(client.clientId+"#"+message);
                 }
             }
         } catch (IOException e) {
